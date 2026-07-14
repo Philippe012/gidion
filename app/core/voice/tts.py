@@ -4,9 +4,11 @@ for MVP — XTTS voice cloning is explicitly deferred (Phase 3.4,
 optional, given its size/speed tradeoff).
 """
 
+from email.mime import text
 import os
 import tempfile
 from pathlib import Path
+import wave
 
 from app import config
 
@@ -42,12 +44,10 @@ class TextToSpeech:
             ) from exc
 
     def synthesize_to_file(self, text: str, output_wav_path: str) -> str:
-        """Synthesizes `text` to a local .wav file and returns its path.
-        Runs entirely on-device."""
         self._ensure_loaded()
         out_path = Path(output_wav_path)
-        with open(out_path, "wb") as f:
-            self._voice.synthesize(text, f)
+        with wave.open(str(out_path), "wb") as wav_file:
+            self._voice.synthesize_wav(text, wav_file)
         return str(out_path)
 
     def synthesize_to_bytes(self, text: str) -> bytes:
