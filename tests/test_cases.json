@@ -1,0 +1,165 @@
+[{
+        "label": "Danger sign short-circuits",
+        "visit": { "age_months": 18, "unable_to_drink": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Severe pneumonia via chest indrawing",
+        "visit": { "age_months": 24, "cough": true, "chest_indrawing": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Pneumonia via fast breathing",
+        "visit": { "age_months": 24, "cough": true, "fast_breathing": true },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Cough or cold, no complications",
+        "visit": { "age_months": 36, "cough": true },
+        "expect_urgency": "home_care"
+    },
+
+    {
+        "label": "Wheeze with danger sign escalates",
+        "visit": { "age_months": 20, "cough": true, "stridor": true, "wheeze": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Severe dehydration, two signs",
+        "visit": { "age_months": 20, "diarrhoea": true, "sunken_eyes": true, "skin_pinch_very_slow": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Some dehydration, two signs",
+        "visit": { "age_months": 20, "diarrhoea": true, "sunken_eyes": true, "drinks_eagerly_thirsty": true },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Persistent diarrhoea with some dehydration escalates to refer_soon",
+        "visit": { "age_months": 20, "diarrhoea": true, "diarrhoea_days": 14, "sunken_eyes": true, "drinks_eagerly_thirsty": true },
+        "expect_urgency": "refer_soon"
+    },
+
+    {
+        "label": "Dysentery (blood in stool), no dehydration",
+        "visit": { "age_months": 30, "diarrhoea": true, "blood_in_stool": true },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Malaria, high risk area, no other source",
+        "visit": { "age_months": 42, "fever": true, "malaria_risk_area": "high" },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Malaria and other infection, high risk area",
+        "visit": { "age_months": 42, "fever": true, "malaria_risk_area": "high", "other_fever_source_found": true },
+        "expect_urgency": "refer_soon"
+    },
+
+    {
+        "label": "Fever, low risk area, malaria unlikely",
+        "visit": { "age_months": 42, "fever": true, "malaria_risk_area": "low" },
+        "expect_urgency": "home_care"
+    },
+
+    {
+        "label": "Very severe febrile disease via stiff neck",
+        "visit": { "age_months": 42, "fever": true, "stiff_neck": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Severe complicated measles via clouded cornea",
+        "visit": { "age_months": 30, "measles_now_or_recent": true, "clouded_cornea": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Measles with eye/mouth complications",
+        "visit": { "age_months": 30, "measles_now_or_recent": true, "eye_infection_or_small_mouth_ulcers": true },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Simple measles",
+        "visit": { "age_months": 30, "measles_now_or_recent": true },
+        "expect_urgency": "home_care"
+    },
+
+    {
+        "label": "Mastoiditis",
+        "visit": { "age_months": 24, "tender_swelling_behind_ear": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Acute ear infection via ear pain",
+        "visit": { "age_months": 24, "ear_pain": true },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Chronic ear infection, pus 14+ days",
+        "visit": { "age_months": 24, "ear_pus_discharge": true, "ear_pus_days": 20 },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Streptococcal sore throat",
+        "visit": { "age_months": 48, "throat_pain": true, "red_throat_or_exudate": true, "tender_neck_lymph_nodes": true },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Viral sore throat",
+        "visit": { "age_months": 48, "throat_pain": true },
+        "expect_urgency": "home_care"
+    },
+
+    {
+        "label": "Severe malnutrition via very low weight",
+        "visit": { "age_months": 30, "very_low_weight_for_age": true },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Severe anaemia via severe pallor",
+        "visit": { "age_months": 30, "palmar_pallor": "severe" },
+        "expect_urgency": "urgent_referral"
+    },
+
+    {
+        "label": "Some anaemia via some pallor",
+        "visit": { "age_months": 30, "palmar_pallor": "some" },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "Multi-category: pneumonia + some dehydration + malaria together",
+        "visit": {
+            "age_months": 30,
+            "cough": true,
+            "fast_breathing": true,
+            "diarrhoea": true,
+            "sunken_eyes": true,
+            "drinks_eagerly_thirsty": true,
+            "fever": true,
+            "malaria_risk_area": "high"
+        },
+        "expect_urgency": "follow_up"
+    },
+
+    {
+        "label": "No classification when nothing reported",
+        "visit": { "age_months": 12 },
+        "expect_urgency": "no_classification"
+    }
+]

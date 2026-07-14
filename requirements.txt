@@ -1,0 +1,15 @@
+# Core
+flask>=3.0
+
+# Local language model (Phase 2)
+llama-cpp-python>=0.2.90
+
+# Voice — optional, only needed if config.VOICE_ENABLED
+pywhispercpp>=1.2
+piper-tts>=1.2
+
+# Packaging
+pyinstaller>=6.6
+
+# Testing
+pytest>=8.0
