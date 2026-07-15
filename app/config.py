@@ -10,7 +10,10 @@ for a new protocol/region" goal (Phase 8) actually practical.
 import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent 
+# ---------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent  # project root
 MODELS_DIR = BASE_DIR / "models"
 DOCS_DIR = BASE_DIR / "docs"
 STORAGE_DB_PATH = BASE_DIR / "storage_data" / "gidion_local.sqlite3"
@@ -31,8 +34,21 @@ LLM_TEMPERATURE = 0.2  # low — this model phrases decisions, it doesn't make t
 # Voice
 # ---------------------------------------------------------------------
 VOICE_ENABLED = os.environ.get("GIDION_VOICE_ENABLED", "0") == "1"
-WHISPER_MODEL_SIZE = "base" 
+WHISPER_MODEL_SIZE = "base"  # whisper.cpp model size, offline
 PIPER_VOICE_PATH = MODELS_DIR / "piper" / "en_US-default.onnx"
+
+# TTS backend selection (SDLC Phase 3.4 — opt-in voice cloning add-on):
+#   "piper"      - fast, small, fixed generic voice
+#   "xtts_clone" - slower, larger, clones a voice from a short reference
+#                  recording you provide yourself. Default, since this
+#                  is now Gidion's normal voice for this deployment —
+#                  override with GIDION_TTS_ENGINE=piper if you ever
+#                  need the faster fallback (e.g. slow hardware).
+TTS_ENGINE = os.environ.get("GIDION_TTS_ENGINE", "piper")
+XTTS_MODEL_NAME = "tts_models/multilingual/multi-dataset/xtts_v2"
+XTTS_LANGUAGE = os.environ.get("GIDION_XTTS_LANGUAGE", "en")
+VOICE_CLONE_DIR = MODELS_DIR / "voice_clone"
+VOICE_CLONE_REFERENCE_PATH = VOICE_CLONE_DIR / "reference.wav"
 
 # ---------------------------------------------------------------------
 # Deployment / regional protocol settings
@@ -61,6 +77,14 @@ DISCLAIMER_TEXT = (
 )
 UI_HOST = "127.0.0.1"
 UI_PORT = 5000
+INTRO_TEXT = (
+    "Hi, I am Gidion. I am an offline clinical triage assistant. I ask "
+    "a few structured questions about a visit, apply a fixed set of "
+    "clinical rules, and give you a classification and a recommended "
+    "next step. I do not diagnose, I do not prescribe, and I never "
+    "talk to a patient directly. The decision is always yours. "
+    "Let us get started."
+)
 
 
 def province_to_malaria_risk(province: str | None) -> str:

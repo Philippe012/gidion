@@ -23,6 +23,26 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+
+
+"""
+Local web UI (SDLC Phase 4).
+
+Runs on 127.0.0.1 only — a local desktop app, never exposed to the
+network. config.DISCLAIMER_TEXT is rendered persistently in the header;
+it is not optional and not something a future feature flag should be
+able to turn off.
+
+Design choice worth stating explicitly: this is a GUIDED conversation,
+not a free-text chatbot. The frontend asks a fixed sequence of
+structured questions and the backend builds a Visit from the answers.
+Nothing the user types is ever sent to the LLM as an open-ended
+question — the LLM only ever phrases an Assessment the rules engine has
+already produced. A free-text "ask anything" box would hand clinical
+judgment to the model, which is exactly what the SDLC's architecture
+forbids (rules engine decides, LLM only rephrases).
+"""
+
 import io
 import os
 import threading
@@ -237,6 +257,7 @@ def index():
         _PAGE_TEMPLATE,
         disclaimer=config.DISCLAIMER_TEXT,
         voice_enabled=config.VOICE_ENABLED,
+        intro_text=config.INTRO_TEXT,
     )
 
 
@@ -503,6 +524,35 @@ _PAGE_TEMPLATE = r"""
 const chat = document.getElementById('chat');
 const answers = {};
 const VOICE_ENABLED = {{ 'true' if voice_enabled else 'false' }};
+const INTRO_TEXT = {{ intro_text|tojson }};
+
+function scrollDown() { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
+
+// Shared by the intro button and the final "Play answer" button — one
+// code path for turning text into audio and playing it, so both use
+// exactly the same (cloned-voice, if configured) pipeline.
+async function speakText(text, btnEl, idleLabel) {
+  const original = btnEl.textContent;
+  btnEl.textContent = 'Loading...';
+  try {
+    const res = await fetch('/api/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      btnEl.textContent = err.error || 'Voice output unavailable';
+      return;
+    }
+    const audioBlob = await res.blob();
+    const audio = new Audio(URL.createObjectURL(audioBlob));
+    btnEl.textContent = idleLabel || original;
+    audio.play();
+  } catch (err) {
+    btnEl.textContent = 'Voice output unavailable';
+  }
+}
 
 function scrollDown() { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
 
@@ -881,27 +931,7 @@ async function finish() {
       speakBtn.className = 'speak-btn';
       speakBtn.style.display = 'inline-flex';
       speakBtn.textContent = '\u{1F50A} Play answer';
-      speakBtn.onclick = async () => {
-        speakBtn.textContent = 'Loading...';
-        try {
-          const res = await fetch('/api/speak', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: data.note }),
-          });
-          if (!res.ok) {
-            const err = await res.json();
-            speakBtn.textContent = err.error || 'Voice output unavailable';
-            return;
-          }
-          const audioBlob = await res.blob();
-          const audio = new Audio(URL.createObjectURL(audioBlob));
-          speakBtn.textContent = '\u{1F50A} Play answer';
-          audio.play();
-        } catch (err) {
-          speakBtn.textContent = 'Voice output unavailable';
-        }
-      };
+      speakBtn.onclick = () => speakText(data.note, speakBtn, '\u{1F50A} Play answer');
       answerBubble.appendChild(speakBtn);
     }
 
@@ -921,6 +951,17 @@ async function finish() {
 }
 
 addBubble("Hi, I'll ask a few structured questions to help triage this visit.", 'assistant');
+if (VOICE_ENABLED) {
+  const introRow = document.createElement('div');
+  introRow.className = 'choices';
+  const introBtn = document.createElement('div');
+  introBtn.className = 'speak-btn';
+  introBtn.style.display = 'inline-flex';
+  introBtn.textContent = '\u{1F50A} Hear Gidion introduce itself';
+  introBtn.onclick = () => speakText(INTRO_TEXT, introBtn, '\u{1F50A} Hear Gidion introduce itself');
+  introRow.appendChild(introBtn);
+  chat.appendChild(introRow);
+}
 askStep();
 </script>
 </body>
