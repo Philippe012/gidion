@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
 echo "[Gidion build] Installing dependencies..."
@@ -6,16 +7,38 @@ pip install -r requirements.txt
 echo "[Gidion build] Running tests before packaging..."
 pytest tests/ -v
 
-echo "[Gidion build] Building single-file executable with PyInstaller..."
-pyinstaller --onefile \
+echo "[Gidion build] Checking that model files are actually present to bundle..."
+missing=0
+for f in \
+  "models/phi-3-mini-4k-instruct-q4.gguf" \
+  "models/ggml-base.bin" \
+  "models/piper/en_US-default.onnx" \
+  "models/voice_clone/reference.wav"
+do
+  if [ ! -f "$f" ]; then
+    echo "  MISSING: $f"
+    missing=1
+  fi
+done
+if [ "$missing" -eq 1 ]; then
+  echo "[Gidion build] Model files missing. Add them before continuing."
+  exit 1
+fi
+
+echo "[Gidion build] Building with PyInstaller (--onedir)..."
+pyinstaller --onedir \
   --name gidion \
   --add-data "docs:docs" \
-  app/main.py
+  --add-data "models:models" \
+  --collect-all torch \
+  --collect-all transformers \
+  --collect-all TTS \
+  --collect-all torchcodec \
+  --collect-all piper \
+  --collect-all pywhispercpp \
+  --collect-all llama_cpp \
+  --collect-all espeakng_loader \
+  --collect-all librosa \
+  run_gidion.py
 
-echo "[Gidion build] Done. Executable is in dist/gidion"
-echo "[Gidion build] NOTE (Phase 5.2): the GGUF model is not bundled by"
-echo "  default due to size. Either:"
-echo "    (a) copy a model into models/ before building and add"
-echo "        --add-data \"models:models\" above, or"
-echo "    (b) ship without it and let main.py's first-run check guide"
-echo "        the user to download one (models/README or Hugging Face)."
+echo "[Gidion build] Done. Folder build is in dist/gidion/"

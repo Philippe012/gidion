@@ -8,15 +8,30 @@ for a new protocol/region" goal (Phase 8) actually practical.
 """
 
 import os
+import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent  # project root
+# BASE_DIR must resolve correctly BOTH when running from source (python
+# -m app.main) AND when frozen into a PyInstaller .exe. __file__ points
+# into a temp extraction folder once frozen — sys.executable's own
+# directory is the actual install location and is what we want instead.
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent  # project root
+
 MODELS_DIR = BASE_DIR / "models"
 DOCS_DIR = BASE_DIR / "docs"
-STORAGE_DB_PATH = BASE_DIR / "storage_data" / "gidion_local.sqlite3"
+
+# User-writable data (override logs) must NOT live next to the bundled
+# resources above — once installed under Program Files, a normal user
+# has no write permission there. %LOCALAPPDATA% (Windows) or the home
+# directory (elsewhere) is always writable by the current user.
+USER_DATA_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "Gidion"
+STORAGE_DB_PATH = USER_DATA_DIR / "storage_data" / "gidion_local.sqlite3"
 
 # ---------------------------------------------------------------------
 # Language model

@@ -92,7 +92,16 @@ class SpeechToText:
         """Transcribes a local WAV file and returns plain text. Never
         sends audio anywhere — whisper.cpp runs entirely on-device."""
         self._ensure_loaded()
-        segments = self._model.transcribe(audio_path)
+        try:
+            segments = self._model.transcribe(audio_path)
+        except Exception as exc:
+            # Model loaded fine, but something about THIS audio failed
+            # (missing file, corrupted data, etc.) — still a voice
+            # problem the caller should handle the same clean way,
+            # not a raw traceback.
+            raise VoiceUnavailableError(
+                f"Could not transcribe audio at '{audio_path}': {exc}"
+            ) from exc
         return " ".join(segment.text.strip() for segment in segments).strip()
 
     def transcribe_bytes(self, audio_bytes: bytes, source_suffix: str = ".webm") -> str:
