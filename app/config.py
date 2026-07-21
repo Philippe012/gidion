@@ -16,10 +16,15 @@ from pathlib import Path
 # ---------------------------------------------------------------------
 # BASE_DIR must resolve correctly BOTH when running from source (python
 # -m app.main) AND when frozen into a PyInstaller .exe. __file__ points
-# into a temp extraction folder once frozen — sys.executable's own
-# directory is the actual install location and is what we want instead.
+# into a temp extraction folder once frozen, and sys.executable's own
+# directory is ALSO wrong for --onedir builds on modern PyInstaller
+# (6.x+ puts bundled --add-data resources inside a separate `_internal`
+# folder, not loose next to the exe). sys._MEIPASS is the variable
+# PyInstaller itself sets specifically for locating bundled resource
+# data, in both --onefile and --onedir modes — use that instead of
+# guessing at folder layout.
 if getattr(sys, "frozen", False):
-    BASE_DIR = Path(sys.executable).resolve().parent
+    BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
 else:
     BASE_DIR = Path(__file__).resolve().parent.parent  # project root
 
@@ -59,7 +64,7 @@ PIPER_VOICE_PATH = MODELS_DIR / "piper" / "en_US-default.onnx"
 #                  is now Gidion's normal voice for this deployment —
 #                  override with GIDION_TTS_ENGINE=piper if you ever
 #                  need the faster fallback (e.g. slow hardware).
-TTS_ENGINE = os.environ.get("GIDION_TTS_ENGINE", "piper")
+TTS_ENGINE = os.environ.get("GIDION_TTS_ENGINE", "xtts_clone")
 XTTS_MODEL_NAME = "tts_models/multilingual/multi-dataset/xtts_v2"
 XTTS_LANGUAGE = os.environ.get("GIDION_XTTS_LANGUAGE", "en")
 VOICE_CLONE_DIR = MODELS_DIR / "voice_clone"
