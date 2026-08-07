@@ -1,29 +1,40 @@
-"""
-Desktop wrapper for Gidion.
-
-Wraps the existing Flask UI (app/ui/server.py) in a native window using
-pywebview, so the user sees a window titled "Gidion" instead of a browser
-tab pointed at http://127.0.0.1:5000.
-
-This file is a launcher only. It imports app and run from server.py
-unchanged and does not modify any existing Flask code. Since it's a
-local-only app served on 127.0.0.1, using pywebview's own window instead
-of a system browser also avoids ever showing an address bar.
-"""
 import socket
 import sys
 import threading
 import time
+import webbrowser
+from pathlib import Path
 
 import webview
 
-# Adjust this import if server.py lives somewhere other than app/ui/server.py
-from app.ui.server import app as flask_app, run as run_flask
+from app.ui.server import run as run_flask
 from app import config
+
+import os
+import logging
+
+BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+os.chdir(BASE_DIR)
+
+LOG_FILE = BASE_DIR / "gidion.log"
+logging.basicConfig(
+    filename=str(LOG_FILE),
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s: %(message)s",
+)
+
+logging.info("Gidion desktop starting; CWD=%s", BASE_DIR)
+
+
+def _resource_path(relative_path: str) -> str:
+    base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    return str(base_path / relative_path)
+
+
+ICON_PATH = _resource_path("assets/gidion-logo.ico")
 
 
 def _wait_for_server(host: str, port: int, timeout: float = 15.0) -> bool:
-    """Poll the port until Flask is actually accepting connections."""
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
@@ -34,10 +45,16 @@ def _wait_for_server(host: str, port: int, timeout: float = 15.0) -> bool:
     return False
 
 
+def _open_browser(url: str) -> bool:
+    try:
+        webbrowser.open(url, new=0)
+        return True
+    except Exception:
+        logging.exception("Failed to open browser")
+        return False
+
+
 def main():
-    # run() calls app.run(host=..., port=..., debug=False) — debug=False
-    # means Flask's reloader is already disabled, so this is safe to run
-    # in a background thread of a frozen PyInstaller exe.
     server_thread = threading.Thread(target=run_flask, daemon=True)
     server_thread.start()
 
@@ -45,19 +62,50 @@ def main():
         print("Gidion server did not start in time.", file=sys.stderr)
         sys.exit(1)
 
-    webview.create_window(
-        "Gidion",
-        f"http://{config.UI_HOST}:{config.UI_PORT}/",
-        width=960,
-        height=820,
-        min_size=(720, 600),
-        resizable=True,
-    )
-    # gui="edgechromium" is the Windows default when pywebview detects
-    # WebView2; being explicit avoids it silently falling back to a
-    # different renderer during a frozen build.
-    webview.start(gui="edgechromium" if sys.platform == "win32" else None)
+    url = f"http://{config.UI_HOST}:{config.UI_PORT}/"
+    logging.info("Opening UI at %s", url)
+
+    try:
+        webview.create_window(
+            "Gidion",
+            url,
+            width=960,
+            height=820,
+            min_size=(720, 600),
+            resizable=True,
+        )
+
+        icon = ICON_PATH if Path(ICON_PATH).exists() else None
+        webview.start(
+            gui="edgechromium" if sys.platform == "win32" else None,
+            icon=icon,
+        )
+    except Exception:
+        logging.exception("pywebview startup failed; falling back to browser")
+        print("[desktop] pywebview failed; opening browser instead.", file=sys.stderr)
+
+        if _open_browser(url):
+            print("[desktop] Opened browser. The app will stay running in the background.", file=sys.stderr)
+            while True:
+                time.sleep(60)
+        else:
+            print("[desktop] Browser fallback also failed.", file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        logging.exception("Unhandled error in desktop")
+        try:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(
+                None,
+                f"Error starting Gidion. See {LOG_FILE}",
+                "Gidion Error",
+                0,
+            )
+        except Exception:
+            pass
+        raise

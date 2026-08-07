@@ -1,17 +1,3 @@
-"""
-Offline text-to-speech. Two backends, selected by config.TTS_ENGINE:
-
-  "piper"      - SDLC Phase 3.2. Fast, small, one fixed generic voice.
-                 Default.
-  "xtts_clone" - SDLC Phase 3.4. Slower, larger, clones a voice from a
-                 short reference recording (models/voice_clone/reference.wav
-                 by default) — opt-in, given the size/speed tradeoff
-                 the SDLC calls out.
-
-Both are still fully on-device — no audio or text is sent anywhere.
-Callers (server.py) don't need to know which backend is active; this
-class dispatches internally based on config.
-"""
 
 import os
 import tempfile

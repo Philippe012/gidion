@@ -1,10 +1,3 @@
-"""
-Checks the LLM/voice error-handling paths against whatever is ACTUALLY
-set up on this machine right now, rather than assuming a fresh install
-with nothing configured. Run any time — safe whether models are
-present or not.
-"""
-
 from app import config
 from app.core.llm.model_wrapper import LocalModel, ModelUnavailableError
 from app.core.voice.stt import SpeechToText, VoiceUnavailableError as STTUnavailableError
@@ -39,8 +32,7 @@ def check_stt():
         except STTUnavailableError as e:
             print(f"[FAIL]  Model file exists but failed to load: {e}")
             return
-        # Model loads fine — now confirm a BAD audio path still fails
-        # cleanly instead of leaking a raw exception.
+        
         try:
             stt.transcribe("this_file_does_not_exist.wav")
             print("[FAIL]  Expected an error for a nonexistent audio file, none was raised.")

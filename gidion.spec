@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('docs', 'docs'), ('models', 'models')]
+datas = [('docs', 'docs'), ('models', 'models'), ('app/ui/templates', 'app/ui/templates'), ('app/ui/static', 'app/ui/static'), ('assets', 'assets')]
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('torch')
@@ -22,19 +22,7 @@ tmp_ret = collect_all('espeakng_loader')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('librosa')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('webview')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-# pywebview's edgechromium backend on Windows drives WebView2 through
-# pythonnet (the 'clr' module). collect_all('webview') doesn't always
-# pull this in since it's a runtime dependency of pywebview, not a
-# subpackage of it, so it's listed explicitly.
-hiddenimports += [
-    'webview.platforms.edgechromium',
-    'webview.platforms.winforms',
-    'clr',
-    'clr_loader',
-]
 
 a = Analysis(
     ['desktop.py'],
@@ -61,7 +49,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

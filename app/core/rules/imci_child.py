@@ -9,11 +9,6 @@ _LEVEL_LABELS = {
     3: "urgent_referral",
 }
 
-
-# =====================================================================
-# Section 1 — General Danger Signs
-# =====================================================================
-
 def has_general_danger_sign(v: Visit) -> bool:
     return any([
         v.unable_to_drink,
@@ -24,16 +19,7 @@ def has_general_danger_sign(v: Visit) -> bool:
     ])
 
 
-# =====================================================================
-# Section 2 — Cough / Difficult Breathing
-# =====================================================================
-
 def is_fast_breathing_for_age(age_months: int, fast_breathing_flag: bool) -> bool:
-    """Visit.fast_breathing is expected to already be computed against
-    the age-specific threshold (2-12mo: >=50/min, 12-59mo: >=40/min) by
-    whatever collects the raw breath count — kept here as a named
-    reference to the rule rather than re-deriving it from a raw count,
-    since Visit doesn't carry a raw breaths-per-minute field."""
     return fast_breathing_flag
 
 
@@ -70,11 +56,6 @@ cough_rules = RuleSet("cough_or_breathing", [
 
 
 def wheeze_note(v: Visit) -> ClassificationResult | None:
-    """Wheeze is a modifier, not a standalone classification (§2e) — it
-    changes treatment within whichever cough classification already
-    fired, and escalates urgency when combined with a danger sign or
-    stridor/chest indrawing. Surfaced as its own low-noise result only
-    when present, so the UI can show the modifier explicitly."""
     if not v.wheeze:
         return None
     if v.chest_indrawing or v.stridor or has_general_danger_sign(v):
@@ -94,11 +75,6 @@ def wheeze_note(v: Visit) -> ClassificationResult | None:
         section_ref="2e",
         action_level=level,
     )
-
-
-# =====================================================================
-# Section 3 — Diarrhoea
-# =====================================================================
 
 diarrhoea_dehydration_rules = RuleSet("diarrhoea", [
     Rule(
@@ -179,10 +155,6 @@ def dysentery_note(v: Visit) -> ClassificationResult | None:
     )
 
 
-# =====================================================================
-# Section 4 — Fever / Malaria / Measles
-# =====================================================================
-
 fever_rules = RuleSet("fever", [
     Rule(
         condition=lambda v: v.fever and v.stiff_neck,
@@ -253,10 +225,6 @@ measles_rules = RuleSet("measles", [
 ])
 
 
-# =====================================================================
-# Section 5 — Ear Problem
-# =====================================================================
-
 ear_rules = RuleSet("ear", [
     Rule(
         condition=lambda v: v.tender_swelling_behind_ear,
@@ -284,9 +252,6 @@ ear_rules = RuleSet("ear", [
 ])
 
 
-# =====================================================================
-# Section 6 — Throat Problem
-# =====================================================================
 
 throat_rules = RuleSet("throat", [
     Rule(
@@ -309,10 +274,6 @@ throat_rules = RuleSet("throat", [
     ),
 ])
 
-
-# =====================================================================
-# Section 7 — Malnutrition & Anaemia
-# =====================================================================
 
 malnutrition_rules = RuleSet("malnutrition", [
     Rule(
@@ -347,11 +308,6 @@ anaemia_rules = RuleSet("anaemia", [
 
 
 def check_routine_care(v: Visit) -> list[str]:
-    """Section 7f — not a symptom classification, just a checklist
-    surfaced alongside the assessment. Simplified stub: real-world use
-    needs actual immunization/vitamin-A/deworming dates, not just a
-    single "within last 6 months" flag — flagged in the protocol doc's
-    engineering notes as future work."""
     reminders = []
     if v.age_months >= 6 and not v.vitamin_a_last_6_months:
         reminders.append("Vitamin A supplementation is due (age >= 6 months, "
@@ -362,17 +318,7 @@ def check_routine_care(v: Visit) -> list[str]:
     return reminders
 
 
-# =====================================================================
-# Combine everything
-# =====================================================================
-
 def assess(visit: Visit) -> Assessment:
-    """Runs every relevant category independently, then combines the
-    results into one overall urgency level (the most severe one found).
-    Section 1 (danger signs) is checked unconditionally and always
-    produces its own result if present, alongside — not instead of —
-    every other category, since the health worker still needs to know
-    about cough/fever/diarrhoea findings even in an emergency."""
     assessment = Assessment()
 
     if has_general_danger_sign(visit):

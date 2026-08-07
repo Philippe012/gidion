@@ -36,8 +36,8 @@ class Visit:
     fever_days: int = 0
     stiff_neck: bool = False
     malaria_risk_area: str = "low"         
-    other_fever_source_found: bool = False  # sore throat / ear infection / ARI / diarrhoea / other cause
-    measles_now_or_recent: bool = False     # generalized rash + (cough or coryza or red eyes), now or in last 3 months
+    other_fever_source_found: bool = False  
+    measles_now_or_recent: bool = False     
     clouded_cornea: bool = False
     deep_mouth_ulcers: bool = False
     eye_infection_or_small_mouth_ulcers: bool = False
@@ -72,9 +72,9 @@ class ClassificationResult:
     """One classification for ONE symptom category (cough, fever, etc)."""
     category: str
     classification: str
-    action: str          # drug-free — this is what Gidion is allowed to say
+    action: str         
     section_ref: str
-    action_level: int    # 0=home_care 1=follow_up 2=refer_soon 3=urgent_referral
+    action_level: int   
 
 
 @dataclass

@@ -1,17 +1,3 @@
-"""
-Offline speech-to-text via whisper.cpp (SDLC Phase 3.1).
-
-Uses the pywhispercpp bindings so no audio ever leaves the device. Two
-defenses against accidental network use, since pywhispercpp will
-auto-download a whisper model on first use if you let it:
-  1. We check for the expected local model file ourselves and raise a
-     clear error if it's missing, rather than letting the library
-     silently reach the network.
-  2. We pass models_dir explicitly so pywhispercpp looks locally first.
-
-Voice is an optional interaction mode (config.VOICE_ENABLED) — Gidion
-must work fully with keyboard/mouse alone if voice isn't set up.
-"""
 
 import os
 import subprocess

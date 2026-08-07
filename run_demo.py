@@ -1,11 +1,3 @@
-"""
-Quick, no-UI way to see the rules engine actually answer.
-
-Run this before touching Flask, the LLM, or voice — it only exercises
-app/core, so it works the moment `pip install -r requirements.txt` has
-finished, with no model files needed.
-"""
-
 from app.core.data.visit import Visit
 from app.core.rules.imci_child import assess
 

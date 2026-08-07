@@ -18,9 +18,9 @@ a visit can classify as both Malaria and Measles at once.
 
 ```python
 # Section 4 additions
-malaria_risk_area: str = "low"       # "high" or "low" — was a plain bool before
+malaria_risk_area: str = "low"     
 other_fever_source_found: bool = False
-measles_now_or_recent: bool = False  # rash + (cough or coryza or red_eyes)
+measles_now_or_recent: bool = False 
 clouded_cornea: bool = False
 deep_mouth_ulcers: bool = False
 eye_infection_or_small_mouth_ulcers: bool = False

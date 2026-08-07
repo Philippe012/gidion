@@ -14,10 +14,6 @@ class Rule:
 
 
 class RuleSet:
-    """Evaluates an ORDERED list of rules for ONE symptom category.
-    Rules must be ordered most severe first — the first matching rule
-    wins *within this category only*. Categories are combined by the
-    protocol's own assess() function (see imci_child.py), never here."""
 
     def __init__(self, category: str, rules: list[Rule]):
         self.category = category

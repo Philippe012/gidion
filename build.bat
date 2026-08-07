@@ -26,10 +26,13 @@ if "%MISSING%"=="1" (
 )
 
 echo [Gidion build] Building with PyInstaller (--onedir)...
-pyinstaller --onedir ^
+pyinstaller --onedir --noconfirm ^
   --name gidion ^
   --add-data "docs;docs" ^
   --add-data "models;models" ^
+  --add-data "app/ui/templates;app/ui/templates" ^
+  --add-data "app/ui/static;app/ui/static" ^
+  --add-data "assets;assets" ^
   --collect-all torch ^
   --collect-all transformers ^
   --collect-all TTS ^
@@ -39,7 +42,7 @@ pyinstaller --onedir ^
   --collect-all llama_cpp ^
   --collect-all espeakng_loader ^
   --collect-all librosa ^
-  run_gidion.py
+  desktop.py
 if errorlevel 1 goto :error
 
 echo [Gidion build] Done. Folder build is in dist\gidion\
