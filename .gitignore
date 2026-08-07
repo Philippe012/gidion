@@ -3,3 +3,25 @@ __pycache__/
 .pytest_cache/
 *.pyc
 models/
+
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Logs
+*.log
+
+# Models (if large)
+models/
+*.gguf
+*.bin
+
+# Environment
+.env
